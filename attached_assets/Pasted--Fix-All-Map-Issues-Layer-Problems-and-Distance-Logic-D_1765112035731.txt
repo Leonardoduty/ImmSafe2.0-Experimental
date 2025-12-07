@@ -1,0 +1,92 @@
+🔥 Fix All Map Issues, Layer Problems, and Distance Logic (Do NOT change design)
+
+I am building a global humanitarian routing web app.
+Please fix these specific issues in my existing code without changing any of the design/UI layout.
+
+1. Fix Auto Zoom / Route Visibility
+
+Current problems:
+
+Short routes (example: Kabul → Islamabad) zoom in too close and I cannot see both countries.
+
+Some routes (example: Kabul → Mazar-i-Sharif) stretch the map and distort the entire view.
+
+What I want:
+
+✔ Use Leaflet’s fitBounds(routeBounds, { padding: [50, 50] }) to make the entire route + surrounding areas fully visible.
+✔ Automatically zoom OUT when routes are short, so the map always shows both countries clearly.
+✔ Completely remove any custom zoom/center logic that overrides fitBounds.
+✔ Prevent ANY map distortion.
+
+2. Fix Map Layers (Safe Zones, Conflict Zones, Water Points)
+
+Current problems:
+
+Layers appear only around Gaza & Israel.
+
+Layers do NOT appear globally.
+
+Layers overlap each other and stack incorrectly.
+
+Some layers don’t show at all.
+
+What I want:
+
+✔ Make all layers work globally, not region-limited.
+✔ Add proper layer groups and z-index ordering so layers never overlap weirdly.
+✔ Ensure the Toggle Layer buttons actually toggle visibility.
+✔ Provide fallback data globally if regional data is missing.
+✔ Keep all UI/design exactly the same.
+
+3. Add Country Borders + Physical Map Option
+
+I want the map to show:
+
+✔ Real country borders (use OSM / geojson borders layer)
+✔ A tile option for terrain/physical map (OpenTopoMap or CartoDB)
+✔ Keep the existing map style as the default.
+✔ Add toggle buttons for Borders + Terrain if needed.
+
+4. Fix Dynamic Distance in Checklist
+
+Current problem:
+
+The checklist always shows “45 km” even when the actual route is different.
+
+What I want:
+
+✔ Use the real route distance returned by the routing engine
+✔ Replace the hardcoded “45 km” value with dynamic km
+✔ The checklist must automatically update after every route search
+
+Example:
+
+Route distance = 17.7 km → checklist must say 17.7 km
+
+Route distance = 240 km → checklist must say 240 km
+
+5. Preserve Everything Else
+
+⚠️ VERY IMPORTANT:
+
+Do NOT redesign anything
+
+Do NOT change UI
+
+Do NOT change layout
+
+Only fix functionality
+
+Leave CSS and styling untouched
+
+Your task is ONLY:
+
+✔ Fix map zoom + distortion
+✔ Fix global layers
+✔ Add borders + terrain
+✔ Fix checklist distance
+✔ Improve routing accuracy
+
+Make the changes directly inside the correct components and ensure everything still runs on Next.js.
+
+✔️ END OF PROMPT

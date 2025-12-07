@@ -28,6 +28,7 @@ export default function MapContainer({ selectedRoute, routeCoordinates }: MapCon
     "water_points",
     "hospitals",
     "checkpoints",
+    "country_borders",
   ])
   const [sourcePoint, setSourcePoint] = useState<MapPoint | null>(null)
   const [destPoint, setDestPoint] = useState<MapPoint | null>(null)

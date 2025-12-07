@@ -76,26 +76,24 @@ export function projectToCanvas(
 
 /**
  * Calculate bounds from coordinates with route polyline support
- * Includes zoom protection for small and large distances
+ * Uses fitBounds-style logic with independent lat/lon spans
+ * Automatically zooms out for short routes so both countries are clearly visible
  */
 export function calculateBounds(
   source?: { lat: number; lon: number },
   destination?: { lat: number; lon: number },
   routePolyline?: Array<{ lat: number; lon: number }>,
-  defaultBounds = { minLat: 20, maxLat: 50, minLon: -10, maxLon: 50 }, // Wider default for global view
+  defaultBounds = { minLat: 20, maxLat: 50, minLon: -10, maxLon: 50 },
 ): { minLat: number; maxLat: number; minLon: number; maxLon: number } {
-  // If no route, use default bounds
   if (!source && !destination) {
     return defaultBounds
   }
 
-  // Start with source/destination bounds
   let minLat = source?.lat ?? destination?.lat ?? defaultBounds.minLat
   let maxLat = source?.lat ?? destination?.lat ?? defaultBounds.maxLat
   let minLon = source?.lon ?? destination?.lon ?? defaultBounds.minLon
   let maxLon = source?.lon ?? destination?.lon ?? defaultBounds.maxLon
 
-  // Include source and destination in bounds
   if (source) {
     minLat = Math.min(minLat, source.lat)
     maxLat = Math.max(maxLat, source.lat)
@@ -110,7 +108,6 @@ export function calculateBounds(
     maxLon = Math.max(maxLon, destination.lon)
   }
 
-  // Include all route polyline points in bounds calculation
   if (routePolyline && routePolyline.length > 0) {
     routePolyline.forEach((point) => {
       minLat = Math.min(minLat, point.lat)
@@ -120,57 +117,71 @@ export function calculateBounds(
     })
   }
 
-  // Calculate distance to determine zoom level
-  const latSpan = maxLat - minLat
-  const lonSpan = maxLon - minLon
-  // Approximate distance in km (1 degree ≈ 111 km)
+  let latSpan = maxLat - minLat
+  let lonSpan = maxLon - minLon
   const distanceKm = Math.sqrt(latSpan * latSpan + lonSpan * lonSpan) * 111
 
-  // Minimum zoom protection for small distances (< 200 km)
-  // Ensure we can see both countries clearly - prevents over-zooming on short routes
-  if (distanceKm < 200) {
-    const centerLat = (minLat + maxLat) / 2
-    const centerLon = (minLon + maxLon) / 2
-    // Minimum 2 degrees span (~220 km) - equivalent to zoom level 5-7
-    const minSpan = 2.0
-    
-    minLat = centerLat - minSpan / 2
-    maxLat = centerLat + minSpan / 2
-    minLon = centerLon - minSpan / 2
-    maxLon = centerLon + minSpan / 2
+  const centerLat = (minLat + maxLat) / 2
+  const centerLon = (minLon + maxLon) / 2
+
+  const minLatSpan = 4.0
+  const minLonSpan = 4.0
+
+  if (distanceKm < 100) {
+    if (latSpan < minLatSpan) {
+      minLat = centerLat - minLatSpan / 2
+      maxLat = centerLat + minLatSpan / 2
+      latSpan = minLatSpan
+    }
+    if (lonSpan < minLonSpan) {
+      minLon = centerLon - minLonSpan / 2
+      maxLon = centerLon + minLonSpan / 2
+      lonSpan = minLonSpan
+    }
+  } else if (distanceKm < 300) {
+    const minSpan = 5.0
+    if (latSpan < minSpan) {
+      minLat = centerLat - minSpan / 2
+      maxLat = centerLat + minSpan / 2
+      latSpan = minSpan
+    }
+    if (lonSpan < minSpan) {
+      minLon = centerLon - minSpan / 2
+      maxLon = centerLon + minSpan / 2
+      lonSpan = minSpan
+    }
+  } else if (distanceKm < 500) {
+    const minSpan = 6.0
+    if (latSpan < minSpan) {
+      minLat = centerLat - minSpan / 2
+      maxLat = centerLat + minSpan / 2
+      latSpan = minSpan
+    }
+    if (lonSpan < minSpan) {
+      minLon = centerLon - minSpan / 2
+      maxLon = centerLon + minSpan / 2
+      lonSpan = minSpan
+    }
   }
 
-  // Maximum zoom protection - prevent over-zooming (zoom levels 13-18)
-  // Limit maximum span to prevent zooming too close
-  // 0.5 degrees ≈ 55 km - prevents excessive zoom
-  const maxSpan = 0.5
-  const currentLatSpan = maxLat - minLat
-  const currentLonSpan = maxLon - minLon
-  
-  if (currentLatSpan < maxSpan || currentLonSpan < maxSpan) {
-    const centerLat = (minLat + maxLat) / 2
-    const centerLon = (minLon + maxLon) / 2
-    
-    // Expand to minimum size if too zoomed in
-    if (currentLatSpan < maxSpan) {
-      minLat = centerLat - maxSpan / 2
-      maxLat = centerLat + maxSpan / 2
-    }
-    if (currentLonSpan < maxSpan) {
-      minLon = centerLon - maxSpan / 2
-      maxLon = centerLon + maxSpan / 2
-    }
-  }
+  const latPadding = latSpan * 0.2
+  const lonPadding = lonSpan * 0.2
 
-  // Add padding (10% on each side)
-  const latPadding = (maxLat - minLat) * 0.1
-  const lonPadding = (maxLon - minLon) * 0.1
-  
+  let finalMinLat = minLat - latPadding
+  let finalMaxLat = maxLat + latPadding
+  let finalMinLon = minLon - lonPadding
+  let finalMaxLon = maxLon + lonPadding
+
+  finalMinLat = Math.max(-85, finalMinLat)
+  finalMaxLat = Math.min(85, finalMaxLat)
+  finalMinLon = Math.max(-180, finalMinLon)
+  finalMaxLon = Math.min(180, finalMaxLon)
+
   return {
-    minLat: minLat - latPadding,
-    maxLat: maxLat + latPadding,
-    minLon: minLon - lonPadding,
-    maxLon: maxLon + lonPadding,
+    minLat: finalMinLat,
+    maxLat: finalMaxLat,
+    minLon: finalMinLon,
+    maxLon: finalMaxLon,
   }
 }
 

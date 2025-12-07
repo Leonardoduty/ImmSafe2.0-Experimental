@@ -154,38 +154,56 @@ export default function InteractiveMap({
     const width = canvas.width
     const height = canvas.height
 
-    // Clear canvas
-    ctx.fillStyle = "#0f1423"
+    const isTerrainMode = activeLayers.includes("terrain")
+    const showCountryBorders = activeLayers.includes("country_borders")
+
+    if (isTerrainMode) {
+      const gradient = ctx.createLinearGradient(0, 0, 0, height)
+      gradient.addColorStop(0, "#2d4a3e")
+      gradient.addColorStop(0.3, "#3d5a4e")
+      gradient.addColorStop(0.5, "#4a6a5a")
+      gradient.addColorStop(0.7, "#5a7a6a")
+      gradient.addColorStop(1, "#6a8a7a")
+      ctx.fillStyle = gradient
+    } else {
+      ctx.fillStyle = "#0f1423"
+    }
     ctx.fillRect(0, 0, width, height)
 
-    // Calculate bounds ONCE - include route polyline for proper zoom and auto-fit
-    // This ensures the route is always visible with proper padding
     const bounds = calculateBounds(routeCoordinates?.source, routeCoordinates?.destination, routePolyline)
     
-    // Helper function to project points using the calculated bounds
     const projectPointLocal = (lat: number, lon: number) => {
       return projectToCanvas(lat, lon, bounds, width, height)
     }
 
-    // Draw world borders if loaded
     if (worldBorders) {
+      if (showCountryBorders || isTerrainMode) {
+        ctx.strokeStyle = isTerrainMode ? "rgba(255, 255, 255, 0.4)" : "rgba(100, 200, 255, 0.5)"
+        ctx.lineWidth = isTerrainMode ? 1.5 : 1
+        ctx.fillStyle = isTerrainMode ? "rgba(60, 100, 80, 0.3)" : "rgba(50, 100, 150, 0.08)"
+      } else {
+        ctx.strokeStyle = "rgba(100, 150, 200, 0.3)"
+        ctx.lineWidth = 1
+        ctx.fillStyle = "rgba(50, 100, 150, 0.05)"
+      }
       drawGeoJSONBorders(ctx, worldBorders, bounds, width, height)
     }
 
-    // Draw grid
-    ctx.strokeStyle = "rgba(0, 255, 65, 0.1)"
-    ctx.lineWidth = 1
-    for (let i = 0; i <= 10; i++) {
-      const x = (i * width) / 10
-      const y = (i * height) / 10
-      ctx.beginPath()
-      ctx.moveTo(x, 0)
-      ctx.lineTo(x, height)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(0, y)
-      ctx.lineTo(width, y)
-      ctx.stroke()
+    if (!isTerrainMode) {
+      ctx.strokeStyle = "rgba(0, 255, 65, 0.1)"
+      ctx.lineWidth = 1
+      for (let i = 0; i <= 10; i++) {
+        const x = (i * width) / 10
+        const y = (i * height) / 10
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, height)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(width, y)
+        ctx.stroke()
+      }
     }
 
     // Draw global layers based on activeLayers
