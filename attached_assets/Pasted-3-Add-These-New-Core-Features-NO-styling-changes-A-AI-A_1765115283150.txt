@@ -1,0 +1,156 @@
+3) Add These New Core Features (NO styling changes)
+A) AI Assistant Caller / Chat
+
+Create:
+components/AIChatWidget.tsx
+lib/api/aiAssistant.ts
+
+Simple chat UI (text input + send).
+
+Server returns canned replies for now.
+
+Structure it so API key can be added later.
+
+B) Emergency Fund
+
+Create:
+components/EmergencyFundForm.tsx
+
+Form: name, amount, reason, contact.
+
+Store entries in localStorage or IndexedDB.
+
+Add export-to-CSV.
+
+C) NGO Directory
+
+Create:
+components/NGOList.tsx
+and data file:
+lib/data/ngoData.ts
+
+Show NGOs, their services, and contact info.
+
+Clicking an NGO focuses its marker on map.
+
+D) UN Offices
+
+Create:
+components/UNList.tsx
+lib/data/unData.ts
+
+Searchable list
+
+Map markers with popups
+
+E) Offline Emergency Protocols
+
+Create: components/OfflineProtocols.tsx
+
+Provide downloadable PDFs stored in /public/protocols/.
+
+And a simple “Generate PDF” using jsPDF.
+
+F) Aid Services
+
+Create:
+components/AidServicesList.tsx
+lib/data/aids.ts
+
+Show shelters, water, medical, legal help.
+
+Link markers to map.
+
+G) Communication Community
+
+Create:
+components/CommunityFeed.tsx
+components/PostCard.tsx
+components/CommentsSection.tsx
+
+Posts stored locally.
+
+Each post can have comments.
+
+Provide export JSON.
+
+H) Visa Help
+
+Create:
+components/VisaHelp.tsx
+lib/data/visaData.ts
+
+Show visa requirements per country.
+
+I) Victim Identification (for UN + NGOs)
+
+Create:
+components/VictimRegistry.tsx
+
+Fields: name, photo (base64), description, status.
+
+Stores locally.
+
+Export JSON for NGOs.
+
+J) Secure Digital Document Vault
+
+Create:
+components/DocumentVault.tsx
+lib/storage/indexeddb.ts
+
+Upload file → encrypt with AES-GCM using Web Crypto.
+
+Store encrypted file in IndexedDB.
+
+Allow decrypt + download + delete.
+
+DO NOT store passphrase.
+
+4) Types
+
+Create /types/index.d.ts with:
+
+Location
+
+NGO
+
+UNOffice
+
+AidService
+
+FundRequest
+
+Post
+
+Comment
+
+VictimRecord
+
+5) Integration
+
+When clicking NGO/UN/Aid items → focus related map marker.
+
+Routing should update the checklist correctly using the new distance/duration.
+
+Ensure all modules import their data from /lib/data/*.
+
+6) Deliverables
+
+After implementing:
+
+List all created files
+
+Show any required import lines
+
+Show example usage instructions for testing
+
+IMPORTANT:
+❌ No UI redesign
+❌ No change to existing styling
+✔ Keep code modular
+✔ All new features isolated in separate components
+
+Begin implementing now.
+
+PROMPT END
