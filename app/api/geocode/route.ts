@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-// No more Nominatim API calls to avoid rate limiting
+// Use OpenStreetMap Nominatim API for global geocoding
+const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/search"
+
+// Fallback database for common locations
 const GEOCODE_DATABASE: Record<
   string,
   { name: string; lat: number; lon: number; type: string; display_name: string }[]
@@ -150,12 +153,67 @@ export async function GET(request: NextRequest) {
 
   try {
     if (query) {
+      // Try Nominatim API first for global search
+      try {
+        const nominatimUrl = `${NOMINATIM_BASE_URL}?q=${encodeURIComponent(query)}&format=json&limit=10&addressdetails=1`
+        const nominatimResponse = await fetch(nominatimUrl, {
+          headers: {
+            "User-Agent": "RefugeeSurvivalApp/1.0",
+          },
+        })
+
+        if (nominatimResponse.ok) {
+          const nominatimData = await nominatimResponse.json()
+          if (nominatimData && nominatimData.length > 0) {
+            const results = nominatimData.map((item: any) => ({
+              name: item.display_name,
+              lat: parseFloat(item.lat),
+              lon: parseFloat(item.lon),
+              type: item.type || item.class || "location",
+              display_name: item.display_name,
+            }))
+            return NextResponse.json(results)
+          }
+        }
+      } catch (nominatimError) {
+        console.error("[v0] Nominatim API error:", nominatimError)
+        // Fall through to database search
+      }
+
+      // Fallback to local database
       const results = fuzzySearchLocations(query, 10)
       return NextResponse.json(results)
     } else if (lat && lon) {
       const lat_num = Number.parseFloat(lat)
       const lon_num = Number.parseFloat(lon)
 
+      // Try Nominatim reverse geocoding first
+      try {
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat_num}&lon=${lon_num}&format=json`
+        const nominatimResponse = await fetch(nominatimUrl, {
+          headers: {
+            "User-Agent": "RefugeeSurvivalApp/1.0",
+          },
+        })
+
+        if (nominatimResponse.ok) {
+          const nominatimData = await nominatimResponse.json()
+          if (nominatimData && nominatimData.display_name) {
+            return NextResponse.json({
+              name: nominatimData.display_name,
+              lat: lat_num,
+              lon: lon_num,
+              type: nominatimData.type || "location",
+              display_name: nominatimData.display_name,
+            })
+          }
+        }
+      } catch (nominatimError) {
+        console.error("[v0] Nominatim reverse geocoding error:", nominatimError)
+        // Fall through to database search
+      }
+
+      // Fallback to local database
       let closestLocation = null
       let closestDistance = Number.POSITIVE_INFINITY
 

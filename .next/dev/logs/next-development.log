@@ -1,0 +1,99 @@
+[00:00:07.544] Server  LOG      ✓ Ready in 5s
+[00:02:34.024] Server  LOG      ○ Compiling / ...
+[00:02:44.451] Server  WARN     ⚠ Cross origin request detected from 192.168.0.108 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[00:02:44.737] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:46.909] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:02:46.909] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:02:46.909] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://192.168.0.108:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765080027386}
+[00:05:23.659] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:05:24.413] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:05:51.484] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:05:51.691] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:06:56.395] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:06:56.641] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:07:20.996] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:07:21.189] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:07:49.129] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:49.551] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:07:49.551] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/checklist","route":"/checklist"}
+[00:07:49.551] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/checklist color: rgb(120, 120, 120) color: inherit {"dp":"/checklist","o":"http://192.168.0.108:3000/checklist","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765080330926}
+[00:08:09.213] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:09.675] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:08:09.675] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:08:09.675] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://192.168.0.108:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765080351050}
+[00:08:41.239] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:08:41.756] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:09:05.308] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:09:05.517] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:14:25.375] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:14:25.996] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:22:42.084] Server  LOG      ✓ Compiled in 134ms
+[00:22:45.389] Server  LOG      ✓ Compiled in 92ms
+[00:22:48.269] Server  LOG      ✓ Compiled in 126ms
+[00:22:51.182] Server  LOG      ✓ Compiled in 113ms
+[00:22:54.698] Server  LOG      ✓ Compiled in 91ms
+[00:22:55.605] Browser ERROR   uncaughtError: ReferenceError: showNGOCenters is not defined
+[00:22:58.189] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:22:58.221] Server  LOG      ✓ Compiled in 178ms
+[00:22:59.140] Server  ERROR    ⨯ ReferenceError: showNGOCenters is not defined
+[00:23:00.207] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:23:01.029] Browser ERROR   uncaughtError: ReferenceError: showNGOCenters is not defined
+[00:23:02.226] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:23:02.435] Server  LOG      ✓ Compiled in 133ms
+[00:23:02.757] Server  ERROR    ⨯ ReferenceError: showNGOCenters is not defined
+[00:23:03.837] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:23:04.663] Browser ERROR   uncaughtError: ReferenceError: showNGOCenters is not defined
+[00:23:11.772] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:23:12.352] Server  LOG      ✓ Compiled in 323ms
+[00:23:12.663] Server  ERROR    ⨯ ReferenceError: showNGOCenters is not defined
+[00:23:16.415] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:23:20.476] Browser ERROR   uncaughtError: ReferenceError: showNGOCenters is not defined
+[00:23:34.050] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:23:34.063] Server  LOG      ✓ Compiled in 124ms
+[00:23:34.914] Server  ERROR    ⨯ ReferenceError: showNGOCenters is not defined
+[00:23:36.697] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:23:37.326] Browser ERROR   uncaughtError: ReferenceError: showNGOCenters is not defined
+[00:23:39.687] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:23:39.739] Server  LOG      ✓ Compiled in 115ms
+[00:23:41.893] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:23:42.612] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:23:42.612] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:23:42.612] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://192.168.0.108:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765081284042}
+[00:23:43.910] Server  LOG      ✓ Compiled in 147ms
+[00:23:46.075] Server  LOG      ✓ Compiled in 167ms
+[00:23:58.069] Server  LOG      ✓ Compiled in 211ms
+[00:24:02.941] Server  LOG      ✓ Compiled in 88ms
+[00:24:22.583] Server  LOG      ✓ Compiled in 108ms
+[00:29:26.381] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:29:26.816] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:29:26.816] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:29:26.816] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://192.168.0.108:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765081628322}
+[00:29:46.675] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:29:47.353] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:30:08.851] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:30:09.149] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:30:09.149] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/checklist","route":"/checklist"}
+[00:30:09.149] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/checklist color: rgb(120, 120, 120) color: inherit {"dp":"/checklist","o":"http://192.168.0.108:3000/checklist","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765081670666}
+[00:31:26.372] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:31:26.981] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:31:26.984] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:31:26.984] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://192.168.0.108:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765081748486}
+[00:32:16.180] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:32:16.788] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:47:44.206] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:47:44.839] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:47:46.042] Browser WARN    [v0] OpenRouteService routing unavailable: NetworkError when attempting to fetch resource.
+[00:47:46.257] Browser WARN    [v0] OSRM routing unavailable (using fallback): NetworkError when attempting to fetch resource.
+[00:47:50.822] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:47:51.428] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:47:51.428] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/checklist","route":"/checklist"}
+[00:47:51.428] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/checklist color: rgb(120, 120, 120) color: inherit {"dp":"/checklist","o":"http://192.168.0.108:3000/checklist","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765082733050}
+[00:59:07.745] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:59:08.237] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:59:08.238] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/guides","route":"/guides"}
+[00:59:08.238] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/guides color: rgb(120, 120, 120) color: inherit {"dp":"/guides","o":"http://192.168.0.108:3000/guides","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765083409902}
+[00:59:18.303] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:59:18.771] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:59:18.771] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/guides","route":"/guides"}
+[00:59:18.771] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://192.168.0.108:3000/guides color: rgb(120, 120, 120) color: inherit {"dp":"/guides","o":"http://192.168.0.108:3000/guides","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765083420389}

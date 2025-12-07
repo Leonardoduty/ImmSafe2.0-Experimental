@@ -6,31 +6,56 @@ import { useState, useEffect } from "react"
 import { Download, Package2, AlertCircle, CheckCircle } from "lucide-react"
 import NavigationBar from "@/components/navigation/navigation-bar"
 import { calculateSupplies } from "@/lib/supply-calculator"
-
-const SAMPLE_JOURNEY = {
-  distance_km: 45,
-  duration_days: 3,
-  nights_required: 2,
-  terrain_difficulty: "MODERATE",
-  weather_risk: 5,
-  conflict_level: 4,
-  water_availability_score: 5,
-  food_availability_score: 3,
-  has_children: true,
-  has_elderly: false,
-  group_size: 4,
-  temperature_min: 8,
-  temperature_max: 22,
-}
+import { useRoute } from "@/lib/route-context"
 
 export default function ChecklistPage() {
+  const { routeData } = useRoute()
   const [supplies, setSupplies] = useState<any>(null)
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
 
+  // Use dynamic route data or fallback to sample
   useEffect(() => {
-    const result = calculateSupplies(SAMPLE_JOURNEY)
+    let journeyData
+    
+    if (routeData.analysis) {
+      // Use actual route analysis data
+      journeyData = {
+        distance_km: routeData.analysis.distance_km || 0,
+        duration_days: routeData.analysis.duration_days || 1,
+        nights_required: routeData.analysis.nights_required || 0,
+        terrain_difficulty: routeData.analysis.terrain_difficulty || "MODERATE",
+        weather_risk: routeData.analysis.weather_risk || 5,
+        conflict_level: routeData.analysis.conflict_intersections || 0,
+        water_availability_score: routeData.analysis.water_score || 5,
+        food_availability_score: routeData.analysis.food_score || 5,
+        has_children: true, // Default - could be from user profile
+        has_elderly: false,
+        group_size: 4,
+        temperature_min: 8,
+        temperature_max: 22,
+      }
+    } else {
+      // Fallback to sample data if no route selected
+      journeyData = {
+        distance_km: 45,
+        duration_days: 3,
+        nights_required: 2,
+        terrain_difficulty: "MODERATE",
+        weather_risk: 5,
+        conflict_level: 4,
+        water_availability_score: 5,
+        food_availability_score: 3,
+        has_children: true,
+        has_elderly: false,
+        group_size: 4,
+        temperature_min: 8,
+        temperature_max: 22,
+      }
+    }
+    
+    const result = calculateSupplies(journeyData)
     setSupplies(result)
-  }, [])
+  }, [routeData.analysis])
 
   if (!supplies) {
     return (
@@ -144,18 +169,26 @@ export default function ChecklistPage() {
             {[
               {
                 label: "Distance",
-                value: `${SAMPLE_JOURNEY.distance_km}km`,
+                value: routeData.analysis
+                  ? `${routeData.analysis.distance_km.toFixed(1)}km`
+                  : "Select route",
                 color: "bg-secondary/10 border-secondary/30",
               },
               {
                 label: "Duration",
-                value: `${SAMPLE_JOURNEY.duration_days}d ${SAMPLE_JOURNEY.nights_required}n`,
+                value: routeData.analysis
+                  ? `${routeData.analysis.duration_days}d ${routeData.analysis.nights_required || 0}n`
+                  : "Select route",
                 color: "bg-yellow-500/10 border-yellow-500/30",
               },
-              { label: "Total Weight", value: `${supplies.total_weight_kg}kg`, color: "bg-accent/10 border-accent/30" },
+              {
+                label: "Total Weight",
+                value: supplies ? `${supplies.total_weight_kg.toFixed(1)}kg` : "0kg",
+                color: "bg-accent/10 border-accent/30",
+              },
               {
                 label: "Water",
-                value: `${supplies.water_liters_total.toFixed(1)}L`,
+                value: supplies ? `${supplies.water_liters_total.toFixed(1)}L` : "0L",
                 color: "bg-primary/10 border-primary/30",
               },
             ].map((stat, idx) => (

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { BookOpen, Heart, Users, Languages, AlertTriangle } from "lucide-react"
 import NavigationBar from "@/components/navigation/navigation-bar"
+import { getAvailableLanguages, getLanguageGuide, type LanguageGuide } from "@/lib/language-guides"
 
 interface Guide {
   id: string
@@ -136,46 +137,12 @@ const guides: Guide[] = [
   },
 ]
 
-const translations = {
-  arabic: {
-    water: "أنا أحتاج ماء",
-    help: "أنا بحاجة لمساعدة طبية",
-    refugee: "أنا لاجئ",
-    safe_place: "أين أقرب مكان آمن؟",
-    help_word: "ساعدوني",
-    un: "أين مكتب الأمم المتحدة؟",
-  },
-  kurdish: {
-    water: "Ez ava hewce kim",
-    help: "Ez peywira alîkariya bijîskî kim",
-    refugee: "Ez penaberan im",
-    safe_place: "Cîhê herî nêzîk û ewledar kîjan e?",
-    help_word: "Alîkar bikin",
-    un: "Ofîsa Yekîtiya Neteweyî kîjan e?",
-  },
-  turkish: {
-    water: "Su gerekli",
-    help: "Tıbbi yardıma ihtiyacım var",
-    refugee: "Ben mülteciim",
-    safe_place: "En yakın güvenli yer neresi?",
-    help_word: "Yardım edin",
-    un: "Birleşmiş Milletler ofisi nerede?",
-  },
-  farsi: {
-    water: "من به آب نیاز دارم",
-    help: "من به کمک پزشکی نیاز دارم",
-    refugee: "من پناهنده هستم",
-    safe_place: "نزدیکترین مکان امن کجاست؟",
-    help_word: "کمک کنید",
-    un: "دفتر سازمان ملل کجاست؟",
-  },
-}
-
-type Language = keyof typeof translations
+// Use language guides from lib
+const availableLanguages = getAvailableLanguages()
 
 export default function GuidesPage() {
   const [selectedGuide, setSelectedGuide] = useState<string>("first-aid")
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>("arabic")
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("arabic")
 
   const activeGuide = guides.find((g) => g.id === selectedGuide)
   const IconComponent = activeGuide?.icon
@@ -245,43 +212,59 @@ export default function GuidesPage() {
               </>
             )}
 
-            {/* Translation Module */}
-            {selectedGuide === "first-aid" && (
-              <div className="rounded-lg border border-border bg-card p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <Languages className="h-6 w-6 text-primary" />
-                  <h3 className="text-lg font-bold text-foreground">Emergency Phrases</h3>
-                </div>
+            {/* Translation Module - Show for all guides */}
+            <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Languages className="h-6 w-6 text-primary" />
+                <h3 className="text-lg font-bold text-foreground">Multi-Language Survival Phrases</h3>
+              </div>
 
-                <div className="mb-4">
-                  <label className="text-sm text-muted-foreground mb-2 block">Select Language:</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(Object.keys(translations) as Language[]).map((lang) => (
-                      <button
-                        key={lang}
-                        onClick={() => setSelectedLanguage(lang)}
-                        className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                          selectedLanguage === lang
-                            ? "bg-primary text-primary-foreground"
-                            : "border border-border hover:bg-muted"
-                        }`}
-                      >
-                        {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(translations[selectedLanguage]).map(([key, translation]) => (
-                    <div key={key} className="rounded-lg bg-muted/30 p-3 border border-border">
-                      <p className="text-xs text-muted-foreground capitalize mb-1">{key.replace(/_/g, " ")}</p>
-                      <p className="text-sm font-semibold text-foreground">{translation}</p>
-                    </div>
+              <div className="mb-4">
+                <label className="text-sm text-muted-foreground mb-2 block">Select Language:</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {availableLanguages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => setSelectedLanguage(lang.code)}
+                      className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                        selectedLanguage === lang.code
+                          ? "bg-primary text-primary-foreground"
+                          : "border border-border hover:bg-muted"
+                      }`}
+                    >
+                      {lang.language}
+                    </button>
                   ))}
                 </div>
               </div>
-            )}
+
+              {(() => {
+                const langGuide = getLanguageGuide(selectedLanguage)
+                if (!langGuide) return null
+
+                return (
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-foreground">{langGuide.title}</h4>
+                    {langGuide.phrases.map((category, catIdx) => (
+                      <div key={catIdx} className="space-y-2">
+                        <h5 className="text-sm font-semibold text-primary">{category.category}</h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {category.items.map((item, itemIdx) => (
+                            <div key={itemIdx} className="rounded-lg bg-muted/30 p-3 border border-border">
+                              <p className="text-xs text-muted-foreground mb-1">{item.english}</p>
+                              <p className="text-sm font-semibold text-foreground">{item.translation}</p>
+                              {item.phonetic && (
+                                <p className="text-xs text-muted-foreground italic mt-1">({item.phonetic})</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()}
+            </div>
           </div>
         </div>
       </div>

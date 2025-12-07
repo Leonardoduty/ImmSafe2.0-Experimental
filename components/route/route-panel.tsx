@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { AlertCircle, Search, MapPin } from "lucide-react"
 import RouteAnalyzer from "./route-analyzer"
 import { autocomplete } from "@/lib/geocoder"
+import { useRoute } from "@/lib/route-context"
 
 interface RoutePanelProps {
   onRouteSelect: (route: any) => void
@@ -14,12 +15,13 @@ interface RoutePanelProps {
 }
 
 export default function RoutePanel({ onRouteSelect, onCoordinatesChange }: RoutePanelProps) {
+  const { routeData, setRouteData } = useRoute()
   const [sourceInput, setSourceInput] = useState("")
   const [destInput, setDestInput] = useState("")
-  const [source, setSource] = useState<{ lat: number; lon: number } | null>(null)
-  const [destination, setDestination] = useState<{ lat: number; lon: number } | null>(null)
-  const [travelMode, setTravelMode] = useState<"walking" | "vehicle">("walking")
-  const [analysis, setAnalysis] = useState<any>(null)
+  const [source, setSource] = useState<{ lat: number; lon: number } | null>(routeData.source || null)
+  const [destination, setDestination] = useState<{ lat: number; lon: number } | null>(routeData.destination || null)
+  const [travelMode, setTravelMode] = useState<"walking" | "vehicle">(routeData.travelMode || "walking")
+  const [analysis, setAnalysis] = useState<any>(routeData.analysis || null)
   const [sourceSuggestions, setSourceSuggestions] = useState<any[]>([])
   const [destSuggestions, setDestSuggestions] = useState<any[]>([])
   const [showSourceDropdown, setShowSourceDropdown] = useState(false)
@@ -31,7 +33,12 @@ export default function RoutePanel({ onRouteSelect, onCoordinatesChange }: Route
 
   useEffect(() => {
     memoizedOnCoordinatesChange()
-  }, [memoizedOnCoordinatesChange])
+    // Auto-trigger analysis when both source and destination are set
+    if (source && destination) {
+      // Analysis will be triggered automatically by RouteAnalyzer component
+      // This effect ensures coordinates are updated immediately
+    }
+  }, [memoizedOnCoordinatesChange, source, destination])
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -56,15 +63,21 @@ export default function RoutePanel({ onRouteSelect, onCoordinatesChange }: Route
   }, [destInput])
 
   const handleSelectSource = (suggestion: any) => {
-    setSource({ lat: suggestion.lat, lon: suggestion.lon })
+    const newSource = { lat: suggestion.lat, lon: suggestion.lon }
+    setSource(newSource)
     setSourceInput(suggestion.name)
     setShowSourceDropdown(false)
+    // Update context
+    setRouteData({ ...routeData, source: newSource })
   }
 
   const handleSelectDestination = (suggestion: any) => {
-    setDestination({ lat: suggestion.lat, lon: suggestion.lon })
+    const newDestination = { lat: suggestion.lat, lon: suggestion.lon }
+    setDestination(newDestination)
     setDestInput(suggestion.name)
     setShowDestDropdown(false)
+    // Update context
+    setRouteData({ ...routeData, destination: newDestination })
   }
 
   const handleAnalysisComplete = useCallback(
@@ -177,7 +190,10 @@ export default function RoutePanel({ onRouteSelect, onCoordinatesChange }: Route
               {(["walking", "vehicle"] as const).map((mode) => (
                 <button
                   key={mode}
-                  onClick={() => setTravelMode(mode)}
+                  onClick={() => {
+                    setTravelMode(mode)
+                    setRouteData({ ...routeData, travelMode: mode })
+                  }}
                   className={`flex-1 rounded-lg border px-3 py-2 text-xs font-semibold transition ${
                     travelMode === mode
                       ? "border-primary bg-primary text-primary-foreground"
@@ -199,15 +215,13 @@ export default function RoutePanel({ onRouteSelect, onCoordinatesChange }: Route
         </div>
       </div>
 
-      {/* Route Analysis */}
-      {source && destination && (
-        <RouteAnalyzer
-          source={source}
-          destination={destination}
-          travelMode={travelMode}
-          onAnalysisComplete={handleAnalysisComplete}
-        />
-      )}
+      {/* Route Analysis - Auto-triggers when both source and destination are set */}
+      <RouteAnalyzer
+        source={source || undefined}
+        destination={destination || undefined}
+        travelMode={travelMode}
+        onAnalysisComplete={handleAnalysisComplete}
+      />
     </div>
   )
 }

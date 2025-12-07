@@ -1,4 +1,5 @@
 // Route Planning & AI Threat Assessment Engine
+import { getCountryDangerLevel } from "./country-danger-levels"
 
 interface RoutePoint {
   lat: number
@@ -166,6 +167,20 @@ export function analyzeRoute(
   const estimatedWaterPerDay = 3 // liters, adjusted for weather
   const adjustedWaterPerDay = estimatedWaterPerDay + (avgWeatherRisk > 7 ? 2 : 0) + (duration_hours > 24 ? 1 : 0)
 
+  // Check country danger levels along route (simplified - check midpoint)
+  const midLat = source.lat + (destination.lat - source.lat) * 0.5
+  const midLon = source.lon + (destination.lon - source.lon) * 0.5
+  // In production, you'd reverse geocode to get country names, but for now we'll add warnings based on known dangerous regions
+  const dangerousCountries: string[] = []
+  if (midLat >= 33 && midLat <= 37 && midLon >= 35 && midLon <= 42) {
+    // Middle East region
+    dangerousCountries.push("Syria", "Iraq", "Lebanon")
+  }
+  if (midLat >= 48 && midLat <= 52 && midLon >= 22 && midLon <= 40) {
+    // Ukraine region
+    dangerousCountries.push("Ukraine")
+  }
+
   // Generate recommendations
   const recommendations: string[] = []
   if (survivalScore < 50) recommendations.push("⚠️ High risk route - consider alternatives")
@@ -177,6 +192,14 @@ export function analyzeRoute(
   if (avgWeatherRisk > 6) recommendations.push("⛈️ Severe weather risk - check daily forecasts")
   if (waterScore > 6 && foodScore > 6) recommendations.push("✅ Good resource availability on route")
   if (survivalScore > 75) recommendations.push("✅ Relatively safer route - standard supplies sufficient")
+  
+  // Add country danger warnings
+  dangerousCountries.forEach((country) => {
+    const dangerLevel = getCountryDangerLevel(country)
+    if (dangerLevel && (dangerLevel.level === "high" || dangerLevel.level === "critical")) {
+      recommendations.push(`🚨 Route passes through ${country} (${dangerLevel.level.toUpperCase()} risk) - ${dangerLevel.reason || "Exercise extreme caution"}`)
+    }
+  })
 
   // Danger explanation
   let dangerExplanation = `Route analysis: ${distance.toFixed(1)} km across `

@@ -27,6 +27,7 @@ export default function MapContainer({ selectedRoute, routeCoordinates }: MapCon
     "conflict_zones",
     "water_points",
     "hospitals",
+    "checkpoints",
   ])
   const [sourcePoint, setSourcePoint] = useState<MapPoint | null>(null)
   const [destPoint, setDestPoint] = useState<MapPoint | null>(null)
@@ -44,6 +45,7 @@ export default function MapContainer({ selectedRoute, routeCoordinates }: MapCon
             onDestinationSelect={setDestPoint}
             selectedRoute={selectedRoute}
             routeCoordinates={routeCoordinates}
+            activeLayers={activeLayers}
           />
         </div>
 

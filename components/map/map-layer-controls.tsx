@@ -29,27 +29,15 @@ export default function MapLayerControls({ activeLayers, onToggleLayer }: MapLay
     },
     {
       id: "hospitals",
-      name: "Hospitals",
+      name: "UN/NGO Centers",
       icon: Heart,
       color: "text-yellow-500",
     },
     {
       id: "checkpoints",
-      name: "Checkpoints",
+      name: "Border Crossings",
       icon: MapPin,
       color: "text-orange-400",
-    },
-    {
-      id: "weather",
-      name: "Weather Alerts",
-      icon: Wind,
-      color: "text-cyan-400",
-    },
-    {
-      id: "hazards",
-      name: "Natural Hazards",
-      icon: Zap,
-      color: "text-purple-400",
     },
   ]
 

@@ -28,12 +28,14 @@ export default function RouteAnalyzer({ source, destination, travelMode, onAnaly
   useEffect(() => {
     if (source && destination) {
       setIsLoading(true)
-      setTimeout(() => {
+      // Keep previous analysis visible during loading to prevent flickering
+      const timer = setTimeout(() => {
         const result = analyzeRoute(source, destination, travelMode)
         setAnalysis(result)
         memoizedOnAnalysisComplete(result)
         setIsLoading(false)
       }, 800)
+      return () => clearTimeout(timer)
     }
   }, [source, destination, travelMode, memoizedOnAnalysisComplete])
 
@@ -128,23 +130,6 @@ export default function RouteAnalyzer({ source, destination, travelMode, onAnaly
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center gap-3 rounded-lg border border-border bg-card/50 p-6">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <span className="text-sm text-muted-foreground">Analyzing global route...</span>
-      </div>
-    )
-  }
-
-  if (!analysis) {
-    return (
-      <div className="rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground">
-        Enter source and destination to analyze
-      </div>
-    )
-  }
-
   const getRiskColor = (level: string) => {
     switch (level) {
       case "LOW":
@@ -160,7 +145,25 @@ export default function RouteAnalyzer({ source, destination, travelMode, onAnaly
     }
   }
 
-  return (
+  if (!source || !destination) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground">
+        Enter source and destination to analyze
+      </div>
+    )
+  }
+
+  if (isLoading && !analysis) {
+    return (
+      <div className="flex items-center justify-center gap-3 rounded-lg border border-border bg-card/50 p-6">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <span className="text-sm text-muted-foreground">Analyzing global route...</span>
+      </div>
+    )
+  }
+
+  // Show loading overlay while keeping previous analysis visible
+  const renderContent = () => (
     <div className="space-y-4 rounded-lg border border-border bg-card p-5">
       {/* Header with Survival Score */}
       <div className="flex items-center justify-between">
@@ -309,4 +312,28 @@ export default function RouteAnalyzer({ source, destination, travelMode, onAnaly
       </div>
     </div>
   )
+
+  if (isLoading && analysis) {
+    return (
+      <div className="relative">
+        {renderContent()}
+        <div className="absolute inset-0 flex items-center justify-center bg-card/80 backdrop-blur-sm z-10 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span className="text-sm text-muted-foreground">Updating analysis...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!analysis) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground">
+        Enter source and destination to analyze
+      </div>
+    )
+  }
+
+  return renderContent()
 }

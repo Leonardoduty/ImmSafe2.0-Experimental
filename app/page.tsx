@@ -5,6 +5,7 @@ import MapContainer from "@/components/map/map-container"
 import RoutePanel from "@/components/route/route-panel"
 import EmergencySOS from "@/components/emergency/emergency-sos"
 import NavigationBar from "@/components/navigation/navigation-bar"
+import AIChat from "@/components/ai-assistant/ai-chat"
 
 export default function Home() {
   const [showSOS, setShowSOS] = useState(false)
@@ -32,6 +33,9 @@ export default function Home() {
 
       {/* Emergency SOS Modal */}
       {showSOS && <EmergencySOS onClose={() => setShowSOS(false)} />}
+
+      {/* AI Assistant Chat */}
+      <AIChat />
     </div>
   )
 }

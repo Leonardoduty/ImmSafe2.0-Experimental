@@ -3,6 +3,10 @@
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { MapPin } from "lucide-react"
+import { loadWorldBorders, calculateBounds, projectToCanvas, drawGeoJSONBorders, generateRoutePolyline } from "@/lib/map-utils"
+import { getGlobalRoute } from "@/lib/routing-engine"
+import { HELP_CENTERS } from "@/lib/ngo-centers"
+import { getLayerPoints, getPointsInBounds, type LayerPoint } from "@/lib/data/mapLayers/global-layers"
 
 interface MapPoint {
   id: string
@@ -21,6 +25,7 @@ interface InteractiveMapProps {
     source?: { lat: number; lon: number }
     destination?: { lat: number; lon: number }
   }
+  activeLayers?: string[]
 }
 
 export default function InteractiveMap({
@@ -28,54 +33,18 @@ export default function InteractiveMap({
   onDestinationSelect,
   selectedRoute,
   routeCoordinates,
+  activeLayers = [],
 }: InteractiveMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [mapPoints, setMapPoints] = useState<MapPoint[]>([
-    {
-      id: "safe1",
-      lat: 35.0,
-      lon: 40.0,
-      type: "safe_zone",
-      label: "UN Camp Alpha",
-      risk: 1,
-    },
-    {
-      id: "safe2",
-      lat: 34.8,
-      lon: 41.2,
-      type: "safe_zone",
-      label: "Hospital Beta",
-      risk: 2,
-    },
-    {
-      id: "water1",
-      lat: 35.2,
-      lon: 40.5,
-      type: "water",
-      label: "Clean Water Point",
-      risk: 3,
-    },
-    {
-      id: "conflict1",
-      lat: 35.5,
-      lon: 39.8,
-      type: "conflict",
-      label: "Active Military",
-      risk: 9,
-    },
-    {
-      id: "conflict2",
-      lat: 34.5,
-      lon: 41.8,
-      type: "conflict",
-      label: "Checkpoint Zone",
-      risk: 6,
-    },
-  ])
+  // Removed hardcoded Gaza/Israel points - now using global layers
+  const [mapPoints, setMapPoints] = useState<MapPoint[]>([])
 
   const [selectionMode, setSelectionMode] = useState<"source" | "destination" | null>(null)
+  const [worldBorders, setWorldBorders] = useState<any>(null)
+  const [routePolyline, setRoutePolyline] = useState<Array<{ lat: number; lon: number }>>([])
 
-  const dynamicMapPoints = [...mapPoints]
+  // Build dynamic map points from route coordinates
+  const dynamicMapPoints: MapPoint[] = []
   if (routeCoordinates?.source) {
     dynamicMapPoints.push({
       id: "route_source",
@@ -97,40 +66,64 @@ export default function InteractiveMap({
     })
   }
 
-  // Map projection (simple mercator-like)
-  const projectPoint = (lat: number, lon: number, width: number, height: number) => {
-    let minLat = 34
-    let maxLat = 36
-    let minLon = 39
-    let maxLon = 42
+  // Load world borders on mount
+  useEffect(() => {
+    loadWorldBorders()
+      .then((borders) => {
+        if (borders) {
+          setWorldBorders(borders)
+        }
+      })
+      .catch((error) => {
+        // Silently fail - borders are optional
+        console.warn("[v0] Could not load world borders:", error)
+      })
+  }, [])
 
-    // Expand bounds if route coordinates are outside the default range
-    if (routeCoordinates?.source) {
-      minLat = Math.min(minLat, routeCoordinates.source.lat)
-      maxLat = Math.max(maxLat, routeCoordinates.source.lat)
-      minLon = Math.min(minLon, routeCoordinates.source.lon)
-      maxLon = Math.max(maxLon, routeCoordinates.source.lon)
+  // Load route polyline when coordinates change
+  useEffect(() => {
+    if (routeCoordinates?.source && routeCoordinates?.destination) {
+      const source = routeCoordinates.source
+      const destination = routeCoordinates.destination
+      
+      // Clear previous route first
+      setRoutePolyline([])
+      
+      getGlobalRoute(source, destination, "walking")
+        .then((route) => {
+          // Ensure route has valid coordinates
+          if (route && route.length > 0) {
+            // Validate coordinates are in correct format [lat, lon]
+            const validRoute = route.filter(
+              (point) =>
+                typeof point.lat === "number" &&
+                typeof point.lon === "number" &&
+                !isNaN(point.lat) &&
+                !isNaN(point.lon) &&
+                point.lat >= -90 &&
+                point.lat <= 90 &&
+                point.lon >= -180 &&
+                point.lon <= 180,
+            )
+            if (validRoute.length > 0) {
+              setRoutePolyline(validRoute)
+            } else {
+              // Fallback if validation fails
+              setRoutePolyline(generateRoutePolyline(source, destination))
+            }
+          } else {
+            setRoutePolyline(generateRoutePolyline(source, destination))
+          }
+        })
+        .catch((error) => {
+          // Fallback to simple polyline
+          console.warn("[v0] Could not load route, using fallback:", error)
+          setRoutePolyline(generateRoutePolyline(source, destination))
+        })
+    } else {
+      setRoutePolyline([])
     }
-    if (routeCoordinates?.destination) {
-      minLat = Math.min(minLat, routeCoordinates.destination.lat)
-      maxLat = Math.max(maxLat, routeCoordinates.destination.lat)
-      minLon = Math.min(minLon, routeCoordinates.destination.lon)
-      maxLon = Math.max(maxLon, routeCoordinates.destination.lon)
-    }
-
-    // Add padding to bounds
-    const latPadding = (maxLat - minLat) * 0.1
-    const lonPadding = (maxLon - minLon) * 0.1
-    minLat -= latPadding
-    maxLat += latPadding
-    minLon -= lonPadding
-    maxLon += lonPadding
-
-    const x = ((lon - minLon) / (maxLon - minLon)) * width
-    const y = ((maxLat - lat) / (maxLat - minLat)) * height
-
-    return { x, y }
-  }
+  }, [routeCoordinates])
 
   const getPointColor = (point: MapPoint) => {
     switch (point.type) {
@@ -165,6 +158,20 @@ export default function InteractiveMap({
     ctx.fillStyle = "#0f1423"
     ctx.fillRect(0, 0, width, height)
 
+    // Calculate bounds ONCE - include route polyline for proper zoom and auto-fit
+    // This ensures the route is always visible with proper padding
+    const bounds = calculateBounds(routeCoordinates?.source, routeCoordinates?.destination, routePolyline)
+    
+    // Helper function to project points using the calculated bounds
+    const projectPointLocal = (lat: number, lon: number) => {
+      return projectToCanvas(lat, lon, bounds, width, height)
+    }
+
+    // Draw world borders if loaded
+    if (worldBorders) {
+      drawGeoJSONBorders(ctx, worldBorders, bounds, width, height)
+    }
+
     // Draw grid
     ctx.strokeStyle = "rgba(0, 255, 65, 0.1)"
     ctx.lineWidth = 1
@@ -181,44 +188,95 @@ export default function InteractiveMap({
       ctx.stroke()
     }
 
-    // Draw zones (background)
-    const safeZones = [
-      { lat: 35.0, lon: 40.0, radius: 0.5, type: "safe" },
-      { lat: 34.8, lon: 41.2, radius: 0.4, type: "safe" },
-    ]
+    // Draw global layers based on activeLayers
+    // Safe Zones Layer
+    if (activeLayers.includes("safe_zones")) {
+      const safeZones = getPointsInBounds(getLayerPoints("safe_zones"), bounds)
+      safeZones.forEach((zone) => {
+        const { x, y } = projectPointLocal(zone.lat, zone.lon)
+        const radius = 8
+        ctx.fillStyle = "rgba(0, 255, 65, 0.2)"
+        ctx.beginPath()
+        ctx.arc(x, y, radius, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = "rgba(0, 255, 65, 0.6)"
+        ctx.lineWidth = 2
+        ctx.stroke()
+        
+        // Label
+        ctx.fillStyle = "#00ff41"
+        ctx.font = "9px monospace"
+        ctx.textAlign = "center"
+        ctx.fillText(zone.label?.substring(0, 10) || "Safe", x, y - 12)
+      })
+    }
 
-    safeZones.forEach((zone) => {
-      const { x, y } = projectPoint(zone.lat, zone.lon, width, height)
-      const radius = (zone.radius / 2) * width
-      ctx.fillStyle = "rgba(0, 255, 65, 0.1)"
-      ctx.beginPath()
-      ctx.arc(x, y, radius, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.strokeStyle = "rgba(0, 255, 65, 0.3)"
-      ctx.lineWidth = 2
-      ctx.stroke()
-    })
+    // Conflict Zones Layer
+    if (activeLayers.includes("conflict_zones")) {
+      const conflictZones = getPointsInBounds(getLayerPoints("conflict_zones"), bounds)
+      conflictZones.forEach((zone) => {
+        const { x, y } = projectPointLocal(zone.lat, zone.lon)
+        const radius = 8
+        ctx.fillStyle = "rgba(255, 23, 68, 0.15)"
+        ctx.beginPath()
+        ctx.arc(x, y, radius, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = "rgba(255, 23, 68, 0.6)"
+        ctx.lineWidth = 2
+        ctx.stroke()
+        
+        // Label
+        ctx.fillStyle = "#ff1744"
+        ctx.font = "9px monospace"
+        ctx.textAlign = "center"
+        ctx.fillText(zone.label?.substring(0, 10) || "Conflict", x, y - 12)
+      })
+    }
 
-    // Draw danger zones
-    const dangerZones = [
-      { lat: 35.5, lon: 39.8, radius: 0.4, type: "danger" },
-      { lat: 34.5, lon: 41.8, radius: 0.3, type: "danger" },
-    ]
+    // Water Points Layer
+    if (activeLayers.includes("water_points")) {
+      const waterPoints = getPointsInBounds(getLayerPoints("water_points"), bounds)
+      waterPoints.forEach((point) => {
+        const { x, y } = projectPointLocal(point.lat, point.lon)
+        ctx.fillStyle = "rgba(0, 153, 255, 0.3)"
+        ctx.beginPath()
+        ctx.arc(x, y, 6, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = "#0099ff"
+        ctx.lineWidth = 2
+        ctx.stroke()
+        
+        // Label
+        ctx.fillStyle = "#0099ff"
+        ctx.font = "8px monospace"
+        ctx.textAlign = "center"
+        ctx.fillText("💧", x, y - 10)
+      })
+    }
 
-    dangerZones.forEach((zone) => {
-      const { x, y } = projectPoint(zone.lat, zone.lon, width, height)
-      const radius = (zone.radius / 2) * width
-      ctx.fillStyle = "rgba(255, 23, 68, 0.08)"
-      ctx.beginPath()
-      ctx.arc(x, y, radius, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.strokeStyle = "rgba(255, 23, 68, 0.4)"
-      ctx.lineWidth = 2
-      ctx.stroke()
-    })
+    // Border Checkpoints Layer
+    if (activeLayers.includes("checkpoints")) {
+      const checkpoints = getPointsInBounds(getLayerPoints("checkpoints"), bounds)
+      checkpoints.forEach((point) => {
+        const { x, y } = projectPointLocal(point.lat, point.lon)
+        ctx.fillStyle = "rgba(255, 193, 7, 0.3)"
+        ctx.beginPath()
+        ctx.arc(x, y, 7, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = "#ffc107"
+        ctx.lineWidth = 2
+        ctx.stroke()
+        
+        // Label
+        ctx.fillStyle = "#ffc107"
+        ctx.font = "8px monospace"
+        ctx.textAlign = "center"
+        ctx.fillText("🚧", x, y - 10)
+      })
+    }
 
     dynamicMapPoints.forEach((point) => {
-      const { x, y } = projectPoint(point.lat, point.lon, width, height)
+      const { x, y } = projectPointLocal(point.lat, point.lon)
       const color = getPointColor(point)
 
       // Draw point with pulse
@@ -239,8 +297,66 @@ export default function InteractiveMap({
       ctx.fillText(point.label.substring(0, 12), x, y - 20)
     })
 
-    // Draw route if selected
-    if (selectedRoute || (routeCoordinates?.source && routeCoordinates?.destination)) {
+    // Draw route polyline if available - with smooth rendering
+    if (routePolyline.length > 0) {
+      // Clear any previous route drawing
+      ctx.save()
+      
+      // Draw route line with proper styling
+      ctx.strokeStyle = "#0099ff"
+      ctx.lineWidth = 4
+      ctx.lineCap = "round"
+      ctx.lineJoin = "round"
+      ctx.setLineDash([])
+      ctx.shadowColor = "rgba(0, 153, 255, 0.5)"
+      ctx.shadowBlur = 8
+      
+      ctx.beginPath()
+      
+      // Draw smooth polyline
+      routePolyline.forEach((point, index) => {
+        const { x, y } = projectPointLocal(point.lat, point.lon)
+        if (index === 0) {
+          ctx.moveTo(x, y)
+        } else {
+          // Use quadratic curves for smoother lines
+          const prevPoint = routePolyline[index - 1]
+          const prevProj = projectPointLocal(prevPoint.lat, prevPoint.lon)
+          const midX = (prevProj.x + x) / 2
+          const midY = (prevProj.y + y) / 2
+          ctx.quadraticCurveTo(prevProj.x, prevProj.y, midX, midY)
+          ctx.lineTo(x, y)
+        }
+      })
+      
+      ctx.stroke()
+      ctx.restore()
+      
+      // Draw route start and end markers
+      if (routePolyline.length > 0) {
+        const start = projectPointLocal(routePolyline[0].lat, routePolyline[0].lon)
+        const end = projectPointLocal(routePolyline[routePolyline.length - 1].lat, routePolyline[routePolyline.length - 1].lon)
+        
+        // Start marker
+        ctx.fillStyle = "#00ffff"
+        ctx.beginPath()
+        ctx.arc(start.x, start.y, 8, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = "#ffffff"
+        ctx.lineWidth = 2
+        ctx.stroke()
+        
+        // End marker
+        ctx.fillStyle = "#ff9800"
+        ctx.beginPath()
+        ctx.arc(end.x, end.y, 8, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = "#ffffff"
+        ctx.lineWidth = 2
+        ctx.stroke()
+      }
+    } else if (selectedRoute || (routeCoordinates?.source && routeCoordinates?.destination)) {
+      // Fallback to simple line if polyline not loaded
       ctx.strokeStyle = "#0099ff"
       ctx.lineWidth = 3
       ctx.setLineDash([5, 5])
@@ -251,19 +367,58 @@ export default function InteractiveMap({
       const endLon = routeCoordinates?.destination?.lon ?? selectedRoute?.destLon
 
       if (startLat !== undefined && startLon !== undefined && endLat !== undefined && endLon !== undefined) {
-        const start = projectPoint(startLat, startLon, width, height)
-        const end = projectPoint(endLat, endLon, width, height)
+        const start = projectPointLocal(startLat, startLon)
+        const end = projectPointLocal(endLat, endLon)
         ctx.moveTo(start.x, start.y)
         ctx.lineTo(end.x, end.y)
         ctx.stroke()
       }
       ctx.setLineDash([])
     }
+
+    // Draw UN/NGO Help Centers (if hospitals layer is active)
+    if (activeLayers.includes("hospitals")) {
+      const visibleCenters = HELP_CENTERS.filter(
+        (c) =>
+          c.lat >= bounds.minLat - 5 &&
+          c.lat <= bounds.maxLat + 5 &&
+          c.lon >= bounds.minLon - 5 &&
+          c.lon <= bounds.maxLon + 5,
+      )
+      visibleCenters.forEach((helpCenter) => {
+        const { x, y } = projectPointLocal(helpCenter.lat, helpCenter.lon)
+        
+        // Determine color by organization type
+        let color = "#00ff41" // Default green
+        if (helpCenter.type === "unhcr") color = "#0066cc"
+        else if (helpCenter.type === "red_cross") color = "#ff0000"
+        else if (helpCenter.type === "msf") color = "#ff9900"
+        else if (helpCenter.type === "unicef") color = "#00a0e3"
+        else if (helpCenter.type === "wfp") color = "#ff6b35"
+        
+        // Draw center marker
+        ctx.fillStyle = color + "80"
+        ctx.beginPath()
+        ctx.arc(x, y, 10, 0, Math.PI * 2)
+        ctx.fill()
+        
+        ctx.fillStyle = color
+        ctx.beginPath()
+        ctx.arc(x, y, 6, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Draw label
+        ctx.fillStyle = color
+        ctx.font = "9px monospace"
+        ctx.textAlign = "center"
+        ctx.fillText(helpCenter.organization.substring(0, 8), x, y - 15)
+      })
+    }
   }
 
   useEffect(() => {
     drawMap()
-  }, [dynamicMapPoints, selectedRoute, routeCoordinates])
+  }, [dynamicMapPoints, selectedRoute, routeCoordinates, worldBorders, routePolyline, activeLayers])
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!selectionMode) return
@@ -275,9 +430,10 @@ export default function InteractiveMap({
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
 
-    // Check if clicked near a point
-    for (const point of mapPoints) {
-      const projected = projectPoint(point.lat, point.lon, canvas.width, canvas.height)
+    // Check if clicked near a point (route source/destination)
+    const bounds = calculateBounds(routeCoordinates?.source, routeCoordinates?.destination, routePolyline)
+    for (const point of dynamicMapPoints) {
+      const projected = projectToCanvas(point.lat, point.lon, bounds, canvas.width, canvas.height)
       const distance = Math.sqrt((x - projected.x) ** 2 + (y - projected.y) ** 2)
 
       if (distance < 20) {
